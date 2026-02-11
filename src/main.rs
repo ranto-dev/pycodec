@@ -1,23 +1,19 @@
-mod algorithms;
 mod cli;
 mod commands;
-mod utils;
+mod algorithms;
 
-use clap::Parser;
 use cli::Cli;
+use clap::Parser;
 
 fn main() {
     let cli = Cli::parse();
 
     match cli.command {
-        cli::Commands::Compress { input, output } => {
-            commands::compress::run(input, output);
+        cli::Commands::Compress { input } => {
+            commands::compress::run(&input);
         }
-        cli::Commands::Decompress { input, output } => {
-            commands::decompress::run(input, output);
-        }
-        cli::Commands::Info { input } => {
-            commands::info::run(input);
+        cli::Commands::Decompress { input } => {
+            commands::decompress::run(&input);
         }
     }
 }

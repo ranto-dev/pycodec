@@ -1,65 +1,76 @@
-pub type LzToken = (usize, usize, u8);
+pub type Token = (usize, usize, u8);
 
-const WINDOW_SIZE: usize = 4096;
-const LOOKAHEAD_SIZE: usize = 18;
-
-/* =====================
-   Compression LZ77
-===================== */
-pub fn compress(input: &[u8]) -> Vec<LzToken> {
+/// Compression LZ77 naïve (fonctionne bloc par bloc)
+pub fn compress(data: &[u8]) -> Vec<Token> {
+    let mut out = Vec::new();
     let mut i = 0;
-    let mut output = Vec::new();
 
-    while i < input.len() {
-        let start = if i > WINDOW_SIZE { i - WINDOW_SIZE } else { 0 };
+    while i < data.len() {
         let mut best_len = 0;
         let mut best_dist = 0;
 
-        for j in start..i {
-            let mut length = 0;
-
-            while length < LOOKAHEAD_SIZE
-                && i + length < input.len()
-                && input[j + length] == input[i + length]
-            {
-                length += 1;
+        for j in 0..i {
+            let mut len = 0;
+            while i + len < data.len() && data[j + len] == data[i + len] {
+                len += 1;
             }
-
-            if length > best_len {
-                best_len = length;
+            if len > best_len {
+                best_len = len;
                 best_dist = i - j;
             }
         }
 
-        let next_byte = if i + best_len < input.len() {
-            input[i + best_len]
+        let next = if i + best_len < data.len() {
+            data[i + best_len]
         } else {
             0
         };
 
-        output.push((best_dist, best_len, next_byte));
+        out.push((best_dist, best_len, next));
         i += best_len + 1;
     }
 
-    output
+    out
 }
 
-/* =====================
-   Décompression LZ77
-===================== */
-pub fn decompress(data: &Vec<LzToken>) -> Vec<u8> {
-    let mut output = Vec::new();
+/// Décompression LZ77
+pub fn decompress(tokens: &Vec<Token>) -> Vec<u8> {
+    let mut out = Vec::new();
 
-    for &(dist, len, byte) in data {
-        if dist > 0 && len > 0 {
-            let start = output.len() - dist;
+    for &(dist, len, byte) in tokens {
+        if dist > 0 {
+            let start = out.len() - dist;
             for i in 0..len {
-                let b = output[start + i];
-                output.push(b);
+                out.push(out[start + i]);
             }
         }
-        output.push(byte);
+        out.push(byte);
     }
 
-    output
+    out
+}
+
+/// Sérialisation manuelle pour sauvegarder les tokens en bytes
+pub fn serialize(tokens: &Vec<Token>) -> Vec<u8> {
+    let mut out = Vec::new();
+    for &(dist, len, byte) in tokens {
+        out.extend_from_slice(&(dist as u32).to_be_bytes());
+        out.extend_from_slice(&(len as u32).to_be_bytes());
+        out.push(byte);
+    }
+    out
+}
+
+/// Désérialisation pour reconstruire les tokens depuis bytes
+pub fn deserialize(data: &[u8]) -> Vec<Token> {
+    let mut tokens = Vec::new();
+    let mut i = 0;
+    while i + 9 <= data.len() {
+        let dist = u32::from_be_bytes(data[i..i + 4].try_into().unwrap()) as usize;
+        let len = u32::from_be_bytes(data[i + 4..i + 8].try_into().unwrap()) as usize;
+        let byte = data[i + 8];
+        tokens.push((dist, len, byte));
+        i += 9;
+    }
+    tokens
 }

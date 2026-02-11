@@ -1,59 +1,33 @@
-use crate::algorithms::{bwt, huffman, lz77};
-use colored::*;
-use std::fs;
+use std::{
+    fs::File,
+    io::{Read, Write},
+};
 
-pub fn run(input: String, output: Option<String>) {
-    println!("{}", "✔ RNT-ZIP Decompressor\n".green().bold());
+use crate::algorithms::{bwt_block::inverse_bwt_block, huffman, lz77};
 
-    let output = output.unwrap_or("output.txt".to_string());
+pub fn run(path: &str) {
+    let mut input = File::open(path).unwrap();
+    let mut output = File::create(path.replace(".rnt", "")).unwrap();
 
-    /* =====================
-       Lecture fichier .rnt
-    ===================== */
-    let compressed = fs::read(&input).expect("Cannot read .rnt file");
+    loop {
+        let mut index_buf = [0u8; 4];
+        if input.read_exact(&mut index_buf).is_err() {
+            break;
+        }
+        let index = u32::from_be_bytes(index_buf) as usize;
 
-    /* =====================
-       Huffman decode
-    ===================== */
-    let decoded = huffman::decode(&compressed);
+        let mut size_buf = [0u8; 4];
+        input.read_exact(&mut size_buf).unwrap();
+        let size = u32::from_be_bytes(size_buf) as usize;
 
-    let mut pos = 0;
+        let mut encoded = vec![0u8; size];
+        input.read_exact(&mut encoded).unwrap();
 
-    /* =====================
-       Lecture index BWT
-    ===================== */
-    let bwt_index = u64::from_be_bytes(decoded[pos..pos + 8].try_into().unwrap()) as usize;
-    pos += 8;
+        let lz_bytes = huffman::decode(&encoded);
+        let lz = lz77::deserialize(&lz_bytes);
+        let bwt = lz77::decompress(&lz);
+        let original = inverse_bwt_block(&bwt, index);
 
-    /* =====================
-       Lecture LZ77
-    ===================== */
-    let mut lz_data = Vec::new();
-
-    while pos + 5 <= decoded.len() {
-        let dist = u16::from_be_bytes(decoded[pos..pos + 2].try_into().unwrap()) as usize;
-        pos += 2;
-
-        let len = u16::from_be_bytes(decoded[pos..pos + 2].try_into().unwrap()) as usize;
-        pos += 2;
-
-        let byte = decoded[pos];
-        pos += 1;
-
-        lz_data.push((dist, len, byte));
+        output.write_all(&original).unwrap();
     }
-
-    /* =====================
-       LZ77 inverse
-    ===================== */
-    let bwt_data = lz77::decompress(&lz_data);
-
-    /* =====================
-       BWT inverse
-    ===================== */
-    let original = bwt::inverse(&bwt_data, bwt_index);
-
-    fs::write(&output, original).expect("Cannot write output file");
-
-    println!("{}", "✔ Decompression completed successfully".green());
 }
