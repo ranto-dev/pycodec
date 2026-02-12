@@ -1,24 +1,36 @@
-import pickle, os
-from core.file_utils import check_file_size, read_chunks
-from compressor.lz77 import compress_stream
-from compressor.arithmetic import ArithmeticEncoder
+import os, pickle
+from rich.console import Console
+from ui.progress import progress_bar
+from algorithms import lz77, mtf, arithmetic, bwt_block
 
+console = Console()
+MIN_SIZE = 100 * 1024 * 1024
 
 def compress_file(input_path, output_path):
-    original_size = check_file_size(input_path)
-    window = b""
+    size = os.path.getsize(input_path)
+    if size <= MIN_SIZE:
+        raise ValueError("Fichier ≤ 100 Mo refusé")
 
-    with open(input_path, "rb") as f, open(output_path, "wb") as out:
-        for chunk in read_chunks(f):
-            tokens, window = compress_stream(chunk, window)
+    console.print("[green]Compression démarrée[/green]")
 
-            flat = []
-            for o, l, b in tokens:
-                flat.extend([o & 0xFF, l & 0xFF, b])
+    with open(input_path, "rb") as f:
+        data = f.read()
 
-            encoder = ArithmeticEncoder()
-            code, freq = encoder.encode(bytes(flat))
+    with progress_bar() as p:
+        t = p.add_task("LZ77", total=4)
+        lz = lz77.compress(data)
+        p.advance(t)
 
-            pickle.dump((code, freq, len(flat)), out)
+        mtf_data = mtf.encode(bytes(x[2] for x in lz))
+        p.advance(t)
 
-    return original_size, os.path.getsize(output_path)
+        code, freq, length = arithmetic.encode(mtf_data)
+        p.advance(t)
+
+        bwt = bwt_block.bwt_block_encode(pickle.dumps((code, freq, length)))
+        p.advance(t)
+
+    with open(output_path, "wb") as f:
+        pickle.dump(bwt, f)
+
+    console.print("[bold green]✔ Compression terminée[/bold green]")

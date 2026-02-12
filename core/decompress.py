@@ -1,25 +1,25 @@
 import pickle
-from compressor.lz77 import decompress_stream
-from compressor.arithmetic import ArithmeticDecoder
+from rich.console import Console
+from algorithms import lz77, mtf, arithmetic, bwt_block
 
+console = Console()
 
 def decompress_file(input_path, output_path):
-    window = b""
+    console.print("[yellow]Décompression démarrée[/yellow]")
 
-    with open(input_path, "rb") as f, open(output_path, "wb") as out:
-        while True:
-            try:
-                code, freq, length = pickle.load(f)
+    with open(input_path, "rb") as f:
+        blocks = pickle.load(f)
 
-                decoder = ArithmeticDecoder()
-                flat = decoder.decode(code, freq, length)
+    data = bwt_block.bwt_block_decode(blocks)
+    code, freq, length = pickle.loads(data)
 
-                tokens = []
-                for i in range(0, len(flat), 3):
-                    tokens.append((flat[i], flat[i+1], flat[i+2]))
+    mtf_data = arithmetic.decode(code, freq, length)
+    mtf_bytes = mtf.decode(mtf_data)
 
-                data, window = decompress_stream(tokens, window)
-                out.write(data)
+    lz_data = [(0, 0, b) for b in mtf_bytes]
+    text = lz77.decompress(lz_data)
 
-            except EOFError:
-                break
+    with open(output_path, "wb") as f:
+        f.write(text)
+
+    console.print("[bold green]✔ Décompression terminée[/bold green]")
