@@ -1,25 +1,20 @@
 import pickle
 from rich.console import Console
-from algorithms import lz77, mtf, arithmetic, bwt_block
+from algorithms.lz77 import decompress as lz77_decompress
+from algorithms.huffman import decompress as huff_decompress
 
 console = Console()
 
 def decompress_file(input_path, output_path):
-    console.print("[yellow]Décompression démarrée[/yellow]")
+    console.print("[bold yellow]▶ Décompression démarrée[/bold yellow]")
 
-    with open(input_path, "rb") as f:
-        blocks = pickle.load(f)
+    with open(input_path, "rb") as fin:
+        encoded, tree = pickle.load(fin)
 
-    data = bwt_block.bwt_block_decode(blocks)
-    code, freq, length = pickle.loads(data)
+    lz_data = pickle.loads(huff_decompress(encoded, tree))
+    original = lz77_decompress(lz_data)
 
-    mtf_data = arithmetic.decode(code, freq, length)
-    mtf_bytes = mtf.decode(mtf_data)
-
-    lz_data = [(0, 0, b) for b in mtf_bytes]
-    text = lz77.decompress(lz_data)
-
-    with open(output_path, "wb") as f:
-        f.write(text)
+    with open(output_path, "wb") as fout:
+        fout.write(original)
 
     console.print("[bold green]✔ Décompression terminée[/bold green]")

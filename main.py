@@ -7,8 +7,8 @@ show_banner()
 
 if len(sys.argv) != 4:
     print("Usage:")
-    print("  python main.py compress <input.txt> <output.tz>")
-    print("  python main.py decompress <input.tz> <output.txt>")
+    print("  python main.py compress <input.txt> <output.rnt>")
+    print("  python main.py decompress <output.rnt> <restored.txt>")
     sys.exit(1)
 
 mode, inp, out = sys.argv[1:]
@@ -18,4 +18,4 @@ if mode == "compress":
 elif mode == "decompress":
     decompress_file(inp, out)
 else:
-    print("Mode inconnu")
+    print("❌ Mode inconnu")
