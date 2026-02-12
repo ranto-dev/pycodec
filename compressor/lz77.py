@@ -1,39 +1,44 @@
 # compressor/lz77.py
 WINDOW_SIZE = 4096
 
-
-def compress(data: bytes):
+def compress_stream(data, window):
     i = 0
-    output = []
+    tokens = []
 
     while i < len(data):
         best_offset = 0
         best_length = 0
 
-        start = max(0, i - WINDOW_SIZE)
-        for j in range(start, i):
+        start = max(0, len(window) - WINDOW_SIZE)
+        search = window[start:] + data[:i]
+
+        for j in range(len(search)):
             length = 0
-            while (i + length < len(data) and
-                   data[j + length] == data[i + length]):
+            while (i + length < len(data)
+                   and j + length < len(search)
+                   and search[j + length] == data[i + length]):
                 length += 1
 
             if length > best_length:
                 best_length = length
-                best_offset = i - j
+                best_offset = len(search) - j
 
         next_byte = data[i + best_length] if i + best_length < len(data) else 0
-        output.append((best_offset, best_length, next_byte))
+        tokens.append((best_offset, best_length, next_byte))
+        window += data[i:i + best_length + 1]
         i += best_length + 1
 
-    return output
+    return tokens, window[-WINDOW_SIZE:]
 
 
-def decompress(tokens):
+def decompress_stream(tokens, window):
     result = bytearray()
 
     for offset, length, byte in tokens:
         for _ in range(length):
-            result.append(result[-offset])
+            result.append(window[-offset])
+            window += bytes([window[-offset]])
         result.append(byte)
+        window += bytes([byte])
 
-    return bytes(result)
+    return bytes(result), window[-WINDOW_SIZE:]
