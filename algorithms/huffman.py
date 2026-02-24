@@ -11,7 +11,6 @@ class Node:
     def __lt__(self, other):
         return self.freq < other.freq
 
-
 def build_tree(data):
     heap = [Node(c, f) for c, f in Counter(data).items()]
     heapq.heapify(heap)
@@ -23,7 +22,6 @@ def build_tree(data):
 
     return heap[0]
 
-
 def build_codes(node, prefix="", code=None):
     if code is None:
         code = {}
@@ -34,13 +32,11 @@ def build_codes(node, prefix="", code=None):
         build_codes(node.right, prefix + "1", code)
     return code
 
-
 def compress(data):
     tree = build_tree(data)
     codes = build_codes(tree)
     encoded = "".join(codes[b] for b in data)
     return encoded, tree
-
 
 def decompress(bits, tree):
     out = bytearray()

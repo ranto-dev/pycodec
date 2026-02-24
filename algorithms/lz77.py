@@ -20,7 +20,6 @@ def compress(data, window_size=4096):
 
     return result
 
-
 def decompress(data):
     out = bytearray()
     for dist, length, byte in data:

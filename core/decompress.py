@@ -6,31 +6,28 @@ from algorithms.huffman import decompress as huff_decompress
 
 console = Console()
 
-
 def decompress_file(input_path, output_path):
     console.print("[bold yellow]▶ Décompression démarrée[/bold yellow]")
 
     with open(input_path, "rb") as fin:
-        # 🔹 Lire taille originale des données LZ sérialisées
+        # Licture de la  taille originale des données LZ sérialisées
         original_size = struct.unpack(">Q", fin.read(8))[0]
 
-        # 🔹 Charger données Huffman
+        # Chargement des données resultat de la compression de Huffman
         encoded, tree = pickle.load(fin)
 
-    # 🔹 Décompression Huffman
+    # Application de la décompression avec Huffman
     decoded_bytes = huff_decompress(encoded, tree)
-
-    # 🔥 Suppression padding
     decoded_bytes = decoded_bytes[:original_size]
 
-    # 🔹 Reconstruction structure LZ77
+    # Reconstruction de la structure LZ77
     lz_data = pickle.loads(decoded_bytes)
 
-    # 🔹 Décompression LZ77
+    # Applicationde la décompression avec LZ77
     original = lz77_decompress(lz_data)
 
-    # 🔹 Écriture fichier restauré
+    # Sauvegarder le fichier text output de la décompression
     with open(output_path, "wb") as fout:
         fout.write(original)
 
-    console.print("[bold green]✔ Décompression terminée[/bold green]")
+    console.print("[bold green] Décompression terminée[/bold green]")

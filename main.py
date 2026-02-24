@@ -18,4 +18,4 @@ if mode == "compress":
 elif mode == "decompress":
     decompress_file(inp, out)
 else:
-    print("❌ Mode inconnu")
+    print("Mode inconnu")
