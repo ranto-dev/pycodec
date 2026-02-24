@@ -1,6 +1,8 @@
 import os
 
-MIN_SIZE = 100 * 1024 * 1024  # 100 MB
+# MIN_SIZE = 100 * 1024 * 1024  # For 100 MB
+
+MIN_SIZE = 1024
 
 def check_file_size(path):
     size = os.path.getsize(path)

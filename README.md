@@ -43,13 +43,21 @@ Le projet utilise la combinaison suivante :
 ### 1️⃣ Cloner le projet
 
 ```bash
+# Cloner le repo github du projet
 git clone git@github.com:ranto-dev/pycodec.git
+
+# aller dans le repertoire du projet
 cd pycodec
 ```
 
 ### 2️⃣ Installer les dépendances
 
 ```bash
+# creaton d'une environement virtuelle
+python -m venv venv
+source venv/bin/activate
+
+# installation avec le package manager pip de python
 pip install -r requirements.txt
 ```
 
