@@ -14,7 +14,7 @@ def show_banner():
         justify="center"
     )
     footer = Text(
-        "Academic Project • Large Files Only (≥ 100 MB)",
+        "Python Project • Large Files Only (≥ 100 MB)",
         style="dim cyan",
         justify="center"
     )
@@ -28,3 +28,5 @@ def show_banner():
     )
 
     console.print(panel)
+
+show_banner()
