@@ -2,7 +2,7 @@
 
 **Lossless Text Compression CLI (LZ77 + Huffman)**
 
-PYCODEC est une application **CLI (Command Line Interface)** de compression de données texte **sans perte**, développée en **Python**.  
+PYCODEC est une application **CLI (Command Line Interface)** de compression de données texte **sans perte**, développée en **Python**.
 Elle est conçue pour traiter **uniquement des fichiers texte volumineux (≥ 100 Mo)** et repose sur une **combinaison d’algorithmes classiques de compression sans perte**.
 
 ## 🎯 Objectif du projet
