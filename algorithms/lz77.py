@@ -1,3 +1,8 @@
+"""
+Corps de l'algorithme LZ77 (1977)
+"""
+
+# la compression
 def compress(data, window_size=4096):
     i = 0
     result = []
@@ -20,6 +25,7 @@ def compress(data, window_size=4096):
 
     return result
 
+# la décompression
 def decompress(data):
     out = bytearray()
     for dist, length, byte in data:

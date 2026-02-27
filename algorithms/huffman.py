@@ -1,6 +1,11 @@
+"""
+Corps de l'algorithme de HUFFMAN
+"""
+
 import heapq
 from collections import Counter
 
+# une classe pour la création 
 class Node:
     def __init__(self, char=None, freq=0, left=None, right=None):
         self.char = char

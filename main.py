@@ -1,3 +1,6 @@
+"""
+point d'entree de l'application
+"""
 import sys
 from ui.banner import show_banner
 from core.compress import compress_file

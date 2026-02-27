@@ -1,6 +1,10 @@
+"""
+programme pour check la taille du fichier entrante (input file)
+"""
+
 import os
 
-MIN_SIZE = 100 * 1024 * 1024  # Pour 100 MB
+MIN_SIZE = 100 * 1024 * 1024  # taille de fichier de 100 MB
 
 def check_file_size(path):
     size = os.path.getsize(path)

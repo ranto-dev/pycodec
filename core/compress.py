@@ -1,3 +1,7 @@
+"""
+controller pour la compression
+"""
+
 import pickle
 import struct
 import os
@@ -7,7 +11,7 @@ from algorithms.huffman import compress as huff_compress
 
 console = Console()
 
-MIN_SIZE = 100 * 1024 * 1024  # Pour 100 MB
+MIN_SIZE = 100 * 1024 * 1024  # taille minimale de 100 MB
 
 def compress_file(input_path, output_path):
     console.print("[bold yellow]▶ Compression démarrée[/bold yellow]")
